@@ -1,1 +1,31 @@
+// Start by declaring all the variables for sensor pins, output values and their thresholds
+int Sensor1Pin = A0;
+int Sensor1Val;
+int Sensor1Threshold = 750; 
+int Sensor2Pin = A1; 
+int Sensor2Val;
+int Sensor2Threshold = 780;  
+
+
+void setup() {
+  Serial.begin(9600);
+}
+
+
+void loop() {
+  Sensor1Val = analogRead(Sensor1Pin);
+  Sensor2Val = analogRead(Sensor2Pin);
+
+  // Serial.print(Sensor1Val);
+  // Serial.print(" | ");
+  // Serial.println(Sensor2Val);
+  // delay(10);
+  if(Sensor1Val < Sensor1Threshold && Sensor2Val < Sensor2Threshold){
+    Serial.println("You get a bracelet!");
+  } 
+  else{
+    Serial.println("No bracelet!");
+    delay(10);
+  }
+}
 
