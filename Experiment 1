@@ -1,29 +1,48 @@
 // Start by declaring all the variables for sensor pins, output values and their thresholds
+
+//Including the servo library
+#include <Servo.h>
+
+//Decalring Sensor 1 variables
 int Sensor1Pin = A0;
 int Sensor1Val;
-int Sensor1Threshold = 750; 
+int Sensor1Threshold;
+int Sensor1Diff = 150;
+
+//Declaring Sensor 2 variables
 int Sensor2Pin = A1; 
 int Sensor2Val;
-int Sensor2Threshold = 780;  
+int Sensor2Threshold; 
+int Sensor2Diff = 150;
+
+//Declaring a object state variable
 int objectState = 0;
+
+//Declaring Continuous motor 1 variables
+Servo Cntservo1;
+int CntServoPin = 9;
 
 
 void setup() {
+
+  //This bit calibrates the reading depending upon the difference
+  Sensor1Threshold = analogRead(Sensor1Pin) - Sensor1Diff;
+  Sensor2Threshold = analogRead(Sensor2Pin) - Sensor2Diff;
+
+  //This bit attaches the Continuous servo motor to the assembly
+  Cntservo1.attach(CntServoPin);
   Serial.begin(9600);
 }
 
 
 void loop() {
+
+  //This bit reads the sensor values and gives them as the output
   Sensor1Val = analogRead(Sensor1Pin);
   Sensor2Val = analogRead(Sensor2Pin);
+ 
 
-  // Serial.print(Sensor1Val);
-  // Serial.print(" | ");
-  // Serial.println(Sensor2Val);
-  // delay(10);
-
-
-  //////This portion defines states 0 is no bracelet and 1 is yes bracelet
+  //This bit satisfies the condition that both the sensors need to be covered
   if(Sensor1Val < Sensor1Threshold && Sensor2Val < Sensor2Threshold){
     objectState = 1;
   } 
@@ -33,14 +52,27 @@ void loop() {
 
 
 
-  //////This portion makes the sensors work
+  //This bit satisfies the condition that the motor rotates only when the sensors are covered
   if(objectState == 1){
+    Cntservo1.write(0);
     Serial.println("You get a bracelet!");
   }
   else{
     Serial.println("No bracelet");
+    Cntservo1.write(92);
   }
+
+
+
+
+
+
+
+
+  //Yhis bit runs the values of both the sensors as the output in the serial monitor
+  // Serial.print(Sensor1Val);
+  // Serial.print(" | ");
+  // Serial.println(Sensor2Val);
+  // delay(10);
 }
-
-
 
