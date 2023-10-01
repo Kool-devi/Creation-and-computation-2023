@@ -18,9 +18,21 @@ int Sensor2Diff = 150;
 //Declaring a object state variable
 int objectState = 0;
 
-//Declaring Continuous motor 1 variables
+//Declaring Continuous servo motor 1 variables
 Servo Cntservo1;
-int CntServoPin = 9;
+int CntServo1Pin = 9;
+int CntServo1Speed = 92;
+
+//Decalring the Standard servo motor 1 variables
+Servo StdServo1;
+int StdServo1Pin = 10;
+int StdServo1InitialPos = 90;
+int StdServo1FinalPos = 180;
+int StdServo1Delay = 1000;
+
+//Declaring the LED variables
+int LedPin = 8;
+
 
 
 void setup() {
@@ -30,7 +42,13 @@ void setup() {
   Sensor2Threshold = analogRead(Sensor2Pin) - Sensor2Diff;
 
   //This bit attaches the Continuous servo motor to the assembly
-  Cntservo1.attach(CntServoPin);
+  Cntservo1.attach(CntServo1Pin);
+  Cntservo1.write(CntServo1Speed);
+
+  //This bit attaches the Standard servo motor to the assembly and moves it to its initial position
+  StdServo1.attach(StdServo1Pin);
+  StdServo1.write(StdServo1InitialPos);
+
   Serial.begin(9600);
 }
 
@@ -54,10 +72,36 @@ void loop() {
 
   //This bit satisfies the condition that the motor rotates only when the sensors are covered
   if(objectState == 1){
-    Cntservo1.write(0);
+
+    // This bit starts the Continuous servo motor in the intended direction
+    Cntservo1.write(30);
+    delay(3000);
+
+    //This bit stops the Continuous servo motor after intended delay
+    Cntservo1.write(92);
+
+    //This bit starts the Standard servo motor in the right direction
+    StdServo1.write(StdServo1InitialPos);
+    delay(StdServo1Delay);
+
+    //This bit rotates the Continuous servo motor in the opposite direction to move it back to its original position
+    Cntservo1.write(150);
+    delay(3000);
+    Cntservo1.write(92);
+
+    //This bit rotates the Standard servo motor in the opposite direction to move it back to its original position
+    StdServo1.write(StdServo1FinalPos);
+    delay(StdServo1Delay);
+
+
     Serial.println("You get a bracelet!");
-  }
+
+ 
+ 
+    }
+
   else{
+    // This ensures to stop the continuous motor if the sensor threshold isn't achieved
     Serial.println("No bracelet");
     Cntservo1.write(92);
   }
@@ -69,7 +113,7 @@ void loop() {
 
 
 
-  //Yhis bit runs the values of both the sensors as the output in the serial monitor
+  //This bit runs the values of both the sensors as the output in the serial monitor
   // Serial.print(Sensor1Val);
   // Serial.print(" | ");
   // Serial.println(Sensor2Val);
