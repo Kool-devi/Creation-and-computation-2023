@@ -7,13 +7,13 @@
 int Sensor1Pin = A0;
 int Sensor1Val;
 int Sensor1Threshold;
-int Sensor1Diff = 150;
+int Sensor1Diff = 100;
 
 //Declaring Sensor 2 variables
 int Sensor2Pin = A1; 
 int Sensor2Val;
 int Sensor2Threshold; 
-int Sensor2Diff = 150;
+int Sensor2Diff = 100;
 
 //Declaring a object state variable
 int objectState = 0;
@@ -22,28 +22,29 @@ int objectState = 0;
 Servo Cntservo1;
 int CntServo1Pin = 9;
 int CntServo1Speed = 92;
+int CntServo1Deg = 180; 
 
 //Decalring the Standard servo motor 1 variables
 Servo StdServo1;
 int StdServo1Pin = 10;
 int StdServo1InitialPos = 90;
 int StdServo1FinalPos = 180;
-int StdServo1Delay = 1000;
+int StdServo1Delay = 2500;
 
-//Declaring the LED variables
-int LedPin = 8;
+// unsigned long previousMillis = 0;
+// const long interval = 3000;
+boolean SensorsAreTouched = false;
+unsigned long ActionsStartTime = 0;
 
-
-
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void setup() {
-
   //This bit calibrates the reading depending upon the difference
   Sensor1Threshold = analogRead(Sensor1Pin) - Sensor1Diff;
   Sensor2Threshold = analogRead(Sensor2Pin) - Sensor2Diff;
 
   //This bit attaches the Continuous servo motor to the assembly
   Cntservo1.attach(CntServo1Pin);
-  Cntservo1.write(CntServo1Speed);
+  Cntservo1.write(91.8);
 
   //This bit attaches the Standard servo motor to the assembly and moves it to its initial position
   StdServo1.attach(StdServo1Pin);
@@ -53,70 +54,111 @@ void setup() {
 }
 
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void loop() {
 
+  if (!SensorsAreTouched && ShouldStartActions()) {
+    SensorsAreTouched = true;
+    ActionsStartTime = millis(); 
+
+    // Rotate the continuous servo in one direction
+    // Cntservo1.write(80);
+  }
+
+  //This bit satisfies the condition that both the sensors need to be covered
+  if(SensorsAreTouched && (millis()- ActionsStartTime >= 1000)){
+    if(ShouldContinueActions()) {
+      Cntservo1.write(100);
+      delay(6500);
+
+      Cntservo1.write(80);
+
+      StdServo1.write(StdServo1FinalPos);
+      delay(StdServo1Delay);
+      
+    }
+    else{
+      SensorsAreTouched = false;
+      Cntservo1.write(91.8);
+    }
+  
+    if(SensorsAreTouched && (millis() - ActionsStartTime >= 600)) {
+      if(ShouldContinueActions()) {
+      StdServo1.write(StdServo1InitialPos);
+    }
+    else{
+      SensorsAreTouched = false;
+      Cntservo1.write(91.8);  
+      StdServo1.write(StdServo1InitialPos);    
+    }
+  }
+  if(SensorsAreTouched && !ShouldContinueActions()){
+    SensorsAreTouched = false; 
+    Cntservo1.write(91.8);
+    Serial.println("No bracelet");
+    StdServo1.write(StdServo1InitialPos);
+
+  }
+  // Cntservo1.write(92);
+  // StdServo1.write(StdServo1InitialPos);
+}
+
+}
+  //  // unsigned long currentMillis = millis();
+
+  //  // if (currentMillis - previousMillis >= interval){
+  //  //   previousMillis = currentMillis;
+  
+  //   // This bit starts the Continuous servo motor in the intended direction
+  //   Cntservo1.write(30);
+  //   delay(500);
+
+  //   if(!ShouldContinueActions()){
+  //     SensorsAreTouched = false;
+  //     Serial.println("No bracelet");
+  //     Cntservo1.write(92);
+  //     }
+  //     else{
+  //       StdServo1.write(StdServo1FinalPos);
+  //       delay(StdServo1Delay);
+
+  //       Cntservo1.write(150);
+  //       delay(500);
+
+  //       if(!ShouldContinueActions()){
+  //         SensorsAreTouched = false;
+  //         Serial.println("No bracelet");
+
+  //         Cntservo1.write(92);
+  //         }
+  //         else{
+  //           StdServo1.write(StdServo1InitialPos);
+  //           Cntservo1.write(92);
+  //           SensorsAreTouched = false;
+  //           Serial.println("No bracelet");
+
+  //         }
+  //       }
+
+  //     }
+  //   }
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+boolean ShouldStartActions() {
   //This bit reads the sensor values and gives them as the output
   Sensor1Val = analogRead(Sensor1Pin);
   Sensor2Val = analogRead(Sensor2Pin);
- 
 
-  //This bit satisfies the condition that both the sensors need to be covered
-  if(Sensor1Val < Sensor1Threshold && Sensor2Val < Sensor2Threshold){
-    objectState = 1;
-  } 
-  else{
-    objectState = 0;
-  }
+  return (Sensor1Val < Sensor1Threshold && Sensor2Val < Sensor2Threshold);
+}
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+boolean ShouldContinueActions() {
+  //This bit checks if the light sensors are still touched to continue actions
+  Sensor1Val = analogRead(Sensor1Pin);
+  Sensor2Val = analogRead(Sensor2Pin);
 
-
-  //This bit satisfies the condition that the motor rotates only when the sensors are covered
-  if(objectState == 1){
-
-    // This bit starts the Continuous servo motor in the intended direction
-    Cntservo1.write(30);
-    delay(3000);
-
-    //This bit stops the Continuous servo motor after intended delay
-    Cntservo1.write(92);
-
-    //This bit starts the Standard servo motor in the right direction
-    StdServo1.write(StdServo1InitialPos);
-    delay(StdServo1Delay);
-
-    //This bit rotates the Continuous servo motor in the opposite direction to move it back to its original position
-    Cntservo1.write(150);
-    delay(3000);
-    Cntservo1.write(92);
-
-    //This bit rotates the Standard servo motor in the opposite direction to move it back to its original position
-    StdServo1.write(StdServo1FinalPos);
-    delay(StdServo1Delay);
-
-
-    Serial.println("You get a bracelet!");
-
- 
- 
-    }
-
-  else{
-    // This ensures to stop the continuous motor if the sensor threshold isn't achieved
-    Serial.println("No bracelet");
-    Cntservo1.write(92);
-  }
-
-
-
-
-
-
-
-
-  //This bit runs the values of both the sensors as the output in the serial monitor
-  // Serial.print(Sensor1Val);
-  // Serial.print(" | ");
-  // Serial.println(Sensor2Val);
-  // delay(10);
+  return (Sensor1Val < Sensor1Threshold && Sensor2Val < Sensor2Threshold);  
 }
 
