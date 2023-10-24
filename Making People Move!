@@ -1,0 +1,102 @@
+////// CLASS DISCUSSION ACTIVITY: "MAKING PEOPLE MOVE!" - CREATION & COMPUTATION, 2023
+//------------------------------------------------------------------------------------------
+
+
+//// A. Initializing variables
+
+  // Variable for housing the image
+  let img;
+
+  //Variable for scaling the image
+  let scalingFactor = 0.35;
+
+  //Variable for housing the video capture
+  var video;
+
+  //Variables to store random color values
+  var r;
+  var g;
+  var b;
+  var a;
+
+
+//// B. Preload Function for faster loading times
+
+  // function preload() {
+  //   img = loadImage('Image0.jpg');
+  // }
+
+
+//// C. Setup Function for creating the canvas, creating video capture and enabling rear view camera on mobile
+
+  function setup() {
+    createCanvas(windowWidth, windowHeight);
+    background(220);
+
+  
+    var constraints =   // Reference: https://editor.p5js.org/AndreasRef/sketches/HJVgGjmz4
+    {    
+      audio: false,
+      video: 
+      {
+        facingMode: 
+        {
+          exact: "environment"
+        }
+      }
+    };
+  
+    video = createCapture(constraints);
+    video.size(windowWidth, windowHeight);
+    video.hide();
+   
+    r = random(255);
+    g = random(100, 255);
+    b = random(100);
+    a = 200;
+
+  }
+
+
+// D. Draw Function
+
+function draw() {
+    imageMode(CORNER);
+    image(video, 0 ,0, windowWidth, windowHeight);
+
+
+
+    fill(r,g,b,a);
+    noStroke();
+    // rectMode(CENTER);
+    rect(video.width/2, video.height/2, 150, 200);
+
+
+    //Variable to find square color
+    let pixelColor; 
+    pixelColor = get(video.width/2, video.height/2);
+    // console.log(pixelColor);
+
+    video.loadPixels();
+    for(let y = video.height/2; y < (video.height/2) + 200; y++)
+    {
+        for(let x = video.width/2; y < (video.width/2) + 150; x++)
+        {
+          let index = (y * video.width + x) * 4;
+          let r = video.pixels[index];
+        }
+    }
+  
+}
+
+
+
+//// G. Tried and failed stuff (Sandbox)
+
+  //Variable to store square color
+  //let squareColor;
+  //squareColor = color(pixelColor);
+  //console.log(squareColor);
+  
+  // imageMode(CENTER);
+  // image (img, windowWidth/2, windowHeight/2, img.width*scalingFactor, img.height*scalingFactor);
